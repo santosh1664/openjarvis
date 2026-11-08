@@ -5,6 +5,7 @@ from .memory import PersonalMemory
 from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolicy
 from .runner import BoundedRunner, RunnerLimits, RunnerOutcome, Step
 from .tasks import Task, TaskStatus, TaskStore
+from .voice import PersonalVoiceService
 
 __all__ = [
     "BoundedRunner",
@@ -13,6 +14,7 @@ __all__ = [
     "PermissionDecision",
     "PermissionPolicy",
     "PersonalMemory",
+    "PersonalVoiceService",
     "RunnerLimits",
     "RunnerOutcome",
     "Step",
