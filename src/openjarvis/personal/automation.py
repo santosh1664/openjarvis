@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from openjarvis.scheduler.scheduler import TaskScheduler
 from openjarvis.scheduler.store import SchedulerStore
 
 
@@ -15,6 +15,7 @@ class PersonalAutomation:
 
     def __init__(self, db_path: str | Path) -> None:
         self._store = SchedulerStore(db_path)
+        self._scheduler = TaskScheduler(self._store)
 
     def create(
         self,
@@ -28,22 +29,19 @@ class PersonalAutomation:
         if not prompt.strip():
             raise ValueError("prompt must not be empty")
         self._validate_schedule(schedule_type, schedule_value)
-        task = {
-            "id": uuid.uuid4().hex,
-            "prompt": prompt.strip(),
-            "schedule_type": schedule_type,
-            "schedule_value": schedule_value,
-            "context_mode": "isolated",
-            "status": "active",
-            "agent": agent,
-            "tools": tools,
-            "metadata": {"managed_by": "personal_jarvis"},
-        }
-        self._store.save_task(task)
-        return self._store.get_task(task["id"]) or task
+        task = self._scheduler.create_task(
+            prompt.strip(),
+            schedule_type,
+            schedule_value,
+            agent=agent,
+            tools=tools,
+            context_mode="isolated",
+            metadata={"managed_by": "personal_jarvis"},
+        )
+        return task.to_dict()
 
     def list(self, status: str | None = None) -> list[dict[str, Any]]:
-        return self._store.list_tasks(status)
+        return [task.to_dict() for task in self._scheduler.list_tasks(status=status)]
 
     def close(self) -> None:
         self._store.close()
