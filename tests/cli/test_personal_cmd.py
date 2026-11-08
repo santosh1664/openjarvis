@@ -81,3 +81,14 @@ def test_personal_approvals_lists_pending_actions(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert "Write report" in result.output
     store.close()
+
+
+def test_personal_privacy_reports_cloud_boundary(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "secret")
+
+    result = CliRunner().invoke(personal, ["privacy"])
+
+    assert result.exit_code == 0, result.output
+    assert "Privacy Center" in result.output
+    assert "anthropic" in result.output
+    assert "secret" not in result.output

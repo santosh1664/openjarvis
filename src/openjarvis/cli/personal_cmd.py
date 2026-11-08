@@ -185,4 +185,24 @@ def approvals() -> None:
         )
 
 
+@personal.command("privacy")
+def privacy() -> None:
+    """Show provider/data-boundary privacy information without secrets."""
+    router = ProviderRouter()
+    configured = router.available()
+    console = Console()
+    console.print("[bold]JARVIS Privacy Center[/bold]")
+    console.print("Local processing: available")
+    if configured:
+        console.print("Cloud providers configured: " + ", ".join(configured))
+        console.print(
+            "Cloud use: possible; requests remain subject to the active "
+            "security policy."
+        )
+    else:
+        console.print("Cloud providers configured: none")
+        console.print("Cloud use: disabled by availability")
+    console.print("API keys: hidden")
+
+
 __all__ = ["personal"]
