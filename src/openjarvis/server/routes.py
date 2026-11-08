@@ -1291,6 +1291,73 @@ async def reload_cloud_engine(request: Request):
     return {"status": "ok", "message": "Cloud engine reloaded"}
 
 
+_WEB_CLOUD_KEYS = {
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "OPENROUTER_API_KEY",
+    "NVIDIA_API_KEY",
+    "NIM_API_KEY",
+    "HF_TOKEN",
+    "HUGGINGFACEHUB_API_TOKEN",
+    "MINIMAX_API_KEY",
+    "ATLASCLOUD_API_KEY",
+}
+
+
+@router.get("/v1/cloud/keys")
+async def cloud_key_status():
+    """Return configured cloud-key status without returning key values."""
+    import os
+
+    keys_path = get_config_dir() / "cloud-keys.env"
+    configured: set[str] = set()
+    if keys_path.exists():
+        for raw_line in keys_path.read_text().splitlines():
+            name, separator, value = raw_line.partition("=")
+            if separator and name in _WEB_CLOUD_KEYS and value.strip():
+                configured.add(name)
+    configured.update(name for name in _WEB_CLOUD_KEYS if os.environ.get(name))
+    return {name: name in configured for name in sorted(_WEB_CLOUD_KEYS)}
+
+
+@router.post("/v1/cloud/keys")
+async def save_cloud_key(request: Request):
+    """Persist one cloud key locally and hot-reload the cloud engine."""
+    import os
+
+    body = await request.json()
+    name = str(body.get("key_name", ""))
+    value = str(body.get("key_value", "")).strip()
+    if name not in _WEB_CLOUD_KEYS:
+        raise HTTPException(status_code=400, detail="Unsupported cloud provider key")
+    keys_path = get_config_dir() / "cloud-keys.env"
+    existing: dict[str, str] = {}
+    if keys_path.exists():
+        for raw_line in keys_path.read_text().splitlines():
+            key, separator, old_value = raw_line.partition("=")
+            if separator and key in _WEB_CLOUD_KEYS and old_value.strip():
+                existing[key] = old_value.strip()
+    if value:
+        existing[name] = value
+        os.environ[name] = value
+    else:
+        existing.pop(name, None)
+        os.environ.pop(name, None)
+    keys_path.parent.mkdir(parents=True, exist_ok=True)
+    keys_path.write_text(
+        "".join(f"{key}={existing[key]}\n" for key in sorted(existing)),
+        encoding="utf-8",
+    )
+    try:
+        keys_path.chmod(0o600)
+    except OSError:
+        pass
+    reload_result = await reload_cloud_engine(request)
+    return {"status": "saved", "key_name": name, **reload_result}
+
+
 @router.get("/v1/savings")
 async def savings(request: Request):
     """Return savings summary compared to cloud providers.

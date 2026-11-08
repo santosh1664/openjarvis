@@ -17,7 +17,11 @@ export const isTauri = () => typeof window !== 'undefined' && !!window.__TAURI_I
 export type CloudKeyStatus = Record<string, boolean>;
 
 export async function getCloudKeyStatus(): Promise<CloudKeyStatus> {
-  if (!isTauri()) return {};
+  if (!isTauri()) {
+    const res = await apiFetch('/v1/cloud/keys');
+    if (!res.ok) throw new Error('Failed to read cloud key status');
+    return await res.json() as CloudKeyStatus;
+  }
   try {
     const { invoke } = await import('@tauri-apps/api/core');
     const rows = await invoke<Array<{ key: string; set: boolean }>>('get_cloud_key_status');
@@ -29,7 +33,13 @@ export async function getCloudKeyStatus(): Promise<CloudKeyStatus> {
 
 export async function saveCloudKey(keyName: string, keyValue: string): Promise<void> {
   if (!isTauri()) {
-    throw new Error('Cloud API keys can be saved in the desktop app only.');
+    const res = await apiFetch('/v1/cloud/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key_name: keyName, key_value: keyValue }),
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || 'Failed to save cloud key');
+    return;
   }
   try {
     const { invoke } = await import('@tauri-apps/api/core');
