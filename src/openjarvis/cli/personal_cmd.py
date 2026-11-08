@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import click
 from rich.console import Console
 
@@ -16,6 +18,7 @@ from openjarvis.personal import (
     PersonalMemory,
     ProfileStore,
     ProviderRouter,
+    WorkspaceInspector,
 )
 
 
@@ -301,6 +304,22 @@ def sync_import(bundle: str, device_id: str) -> None:
     finally:
         store.close()
     click.echo(f"Imported {added} new offline events")
+
+
+@personal.command("workspace")
+@click.argument("root", type=click.Path(exists=True, file_okay=False), default=".")
+@click.option("--max-files", default=50, show_default=True)
+def workspace(root: str, max_files: int) -> None:
+    """Inspect a coding workspace without modifying it."""
+    report = WorkspaceInspector(Path(root), max_files=max_files).inspect()
+    click.echo("JARVIS Workspace Intelligence")
+    click.echo(f"Root: {report['root']}")
+    click.echo(f"Git repository: {'yes' if report['is_git_repo'] else 'no'}")
+    click.echo(f"Files: {report['file_count']} ({report['test_files']} test files)")
+    if report["truncated"]:
+        click.echo(f"Showing first {len(report['files'])} files")
+    for filename in report["files"]:
+        click.echo(f"- {filename}")
 
 
 __all__ = ["personal"]

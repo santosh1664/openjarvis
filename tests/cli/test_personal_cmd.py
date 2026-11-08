@@ -143,3 +143,14 @@ def test_personal_sync_exports_and_imports_bundle(tmp_path, monkeypatch):
     assert exported.exit_code == 0, exported.output
     assert imported.exit_code == 0, imported.output
     assert "Imported 1 new" in imported.output
+
+
+def test_personal_workspace_reports_files(tmp_path):
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "README.md").write_text("demo", encoding="utf-8")
+
+    result = CliRunner().invoke(personal, ["workspace", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "Workspace Intelligence" in result.output
+    assert "README.md" in result.output

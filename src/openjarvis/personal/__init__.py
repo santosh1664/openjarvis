@@ -13,6 +13,7 @@ from .runner import BoundedRunner, RunnerLimits, RunnerOutcome, Step
 from .sync import OfflineSyncStore
 from .tasks import Task, TaskStatus, TaskStore
 from .voice import PersonalVoiceService
+from .workspace import WorkspaceInspector
 
 __all__ = [
     "BoundedRunner",
@@ -31,6 +32,7 @@ __all__ = [
     "PersonalKnowledgeGraph",
     "PersonalVoiceService",
     "OfflineSyncStore",
+    "WorkspaceInspector",
     "RunnerLimits",
     "RunnerOutcome",
     "Step",
