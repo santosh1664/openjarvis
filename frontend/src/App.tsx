@@ -12,7 +12,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { SetupScreen } from './components/SetupScreen';
 import { Toaster } from './components/ui/sonner';
 import { useAppStore } from './lib/store';
-import { fetchModels, fetchServerInfo, fetchSavings, submitSavings, isTauri } from './lib/api';
+import { fetchModels, fetchServerInfo, fetchSavings, submitSavings, getCloudKeyStatus, isTauri } from './lib/api';
 import { OptInModal } from './components/OptInModal';
 import { UpdateChecker } from './components/Desktop/UpdateChecker';
 import { track, hashId } from './lib/analytics';
@@ -31,6 +31,7 @@ export default function App() {
   }, []);
   const prevModelRef = useRef<string>('');
   const setModels = useAppStore((s) => s.setModels);
+  const setSelectedModel = useAppStore((s) => s.setSelectedModel);
   const setModelsLoading = useAppStore((s) => s.setModelsLoading);
   const selectedModel = useAppStore((s) => s.selectedModel);
   const setServerInfo = useAppStore((s) => s.setServerInfo);
@@ -70,6 +71,19 @@ export default function App() {
     fetchModels()
       .then((m) => {
         setModels(m);
+        if (useAppStore.getState().selectedModel) return;
+        return getCloudKeyStatus().then((status) => {
+          const fallback = status.OPENROUTER_API_KEY
+            ? 'openrouter/auto'
+            : status.OPENAI_API_KEY
+              ? 'gpt-4o-mini'
+              : status.ANTHROPIC_API_KEY
+                ? 'claude-haiku-4-5'
+                : status.GEMINI_API_KEY || status.GOOGLE_API_KEY
+                  ? 'gemini-2.5-flash'
+                  : '';
+          if (fallback) setSelectedModel(fallback);
+        });
       })
       .catch(() => setModels([]))
       .finally(() => setModelsLoading(false));
