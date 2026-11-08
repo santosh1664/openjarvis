@@ -18,7 +18,9 @@ from openjarvis.personal import PermissionAuditLog, TaskStore
 
 @click.command("setup")
 @click.option("--full", is_flag=True, help="Initialize all local JARVIS state.")
-def setup(full: bool) -> None:
+@click.option("--start", is_flag=True, help="Launch chat after setup completes.")
+@click.option("--voice", is_flag=True, help="Launch chat with voice input/output.")
+def setup(full: bool, start: bool, voice: bool) -> None:
     """Initialize local state for personal JARVIS features."""
     if not full:
         raise click.UsageError("use `jarvis setup --full` to initialize JARVIS")
@@ -56,6 +58,15 @@ def setup(full: bool) -> None:
             Console().print("  Model: Ollama is not running; setup will resume later")
     Console().print("  Permissions: deny-by-default")
     Console().print("  Autonomous execution: bounded")
+    if start:
+        launch_chat(voice)
+
+
+def launch_chat(voice: bool) -> None:
+    """Launch the existing chat command after initialization."""
+    from openjarvis.cli.chat_cmd import chat
+
+    chat.main(args=["--voice"] if voice else [], standalone_mode=False)
 
 
 __all__ = ["setup"]
