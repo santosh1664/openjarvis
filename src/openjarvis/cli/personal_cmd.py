@@ -139,4 +139,28 @@ def provider_status() -> None:
         Console().print("Fallback models: " + " -> ".join(fallback))
 
 
+@personal.command("status")
+def status() -> None:
+    """Show a local dashboard summary for the personal JARVIS runtime."""
+    config_dir = get_config_dir()
+    profiles = ProfileStore(config_dir / "profiles.db")
+    automation = PersonalAutomation(config_dir / "scheduler.db")
+    passcode = PasscodeStore(config_dir / "security.db")
+    try:
+        profile_count = len(profiles.list())
+        automation_count = len(automation.list(status="active"))
+        passcode_state = "configured" if passcode.is_configured() else "not configured"
+    finally:
+        profiles.close()
+        automation.close()
+        passcode.close()
+    providers = ProviderRouter()
+    console = Console()
+    console.print("[bold]JARVIS Personal Status[/bold]")
+    console.print(f"Profiles: {profile_count}/3")
+    console.print(f"Active automations: {automation_count}")
+    console.print(f"Passcode: {passcode_state}")
+    console.print(f"Providers: {', '.join(providers.available()) or 'local-only'}")
+
+
 __all__ = ["personal"]

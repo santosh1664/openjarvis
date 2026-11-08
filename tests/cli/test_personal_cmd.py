@@ -56,3 +56,14 @@ def test_personal_provider_status_redacts_keys(monkeypatch):
     assert result.exit_code == 0, result.output
     assert "openrouter: configured" in result.output
     assert "secret-value" not in result.output
+
+
+def test_personal_status_summarizes_local_state(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+
+    result = CliRunner().invoke(personal, ["status"])
+
+    assert result.exit_code == 0, result.output
+    assert "JARVIS Personal Status" in result.output
+    assert "Profiles: 0/3" in result.output
+    assert "Passcode: not configured" in result.output
