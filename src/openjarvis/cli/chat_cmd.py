@@ -13,13 +13,19 @@ from rich.markup import escape
 
 from openjarvis.cli._runtime_panel import runtime_cli_options
 from openjarvis.cli._tool_names import resolve_tool_names
-from openjarvis.cli._voice_chat import VOICE_EXIT, VoiceSession, read_voice_input, speak
+from openjarvis.cli._voice_chat import (
+    VOICE_EXIT,
+    VoiceSession,
+    read_voice_input,
+    record_voice,
+    speak,
+)
 from openjarvis.core.config import load_config
 from openjarvis.core.events import EventBus
 from openjarvis.core.paths import get_config_dir
 from openjarvis.core.types import Message, Role
 from openjarvis.memory import publish_completed_exchange
-from openjarvis.personal import ProfileStore
+from openjarvis.personal import PasscodeStore, ProfileStore
 
 logger = logging.getLogger(__name__)
 
@@ -298,6 +304,27 @@ def chat(
     # Keep voice state outside the core chat path so picker/runtime changes can
     # be layered independently. Loaded speech models live for this session.
     voice_session = VoiceSession(config) if voice_mode else None
+    if voice_mode and voice_session is not None:
+        passcode_store = PasscodeStore(get_config_dir() / "security.db")
+        try:
+            if passcode_store.is_configured():
+                console.print(
+                    "[yellow]Security enabled. Say your passcode to continue.[/yellow]"
+                )
+                spoken_passcode = record_voice(
+                    console, voice_session, announce_transcript=False
+                )
+                if spoken_passcode is VOICE_EXIT or not isinstance(
+                    spoken_passcode, str
+                ):
+                    console.print("[red]Access denied.[/red]")
+                    return
+                if not passcode_store.verify(spoken_passcode):
+                    console.print("[red]Access denied.[/red]")
+                    return
+                console.print("[green]Access granted.[/green]")
+        finally:
+            passcode_store.close()
 
     # Print banner
     voice_hint = (

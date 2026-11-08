@@ -133,6 +133,8 @@ def read_voice_input(console: Any, session: VoiceSession) -> Optional[str] | obj
 def record_voice(
     console: Any,
     session: VoiceSession | None = None,
+    *,
+    announce_transcript: bool = True,
 ) -> Optional[str] | object:
     """Record from mic, transcribe, and return text or a loop sentinel."""
     from openjarvis.speech.voice_io import record_until_silence
@@ -172,6 +174,8 @@ def record_voice(
             str(detected_language).strip().lower() or None
         )
         if text:
+            if not announce_transcript:
+                return text
             console.print(f"[bold]You (voice):[/bold] {_terminal_safe_text(text)}")
             return text
         console.print("[dim]Nothing heard — try again.[/dim]")

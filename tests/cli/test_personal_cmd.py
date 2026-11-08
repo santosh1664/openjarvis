@@ -33,3 +33,16 @@ def test_personal_profile_create_and_list(tmp_path, monkeypatch):
     assert created.exit_code == 0, created.output
     assert listed.exit_code == 0, listed.output
     assert "Alice" in listed.output
+
+
+def test_personal_security_set_passcode(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+
+    result = CliRunner().invoke(
+        personal,
+        ["security", "set-passcode"],
+        input="4829\n4829\n",
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Passcode enabled" in result.output

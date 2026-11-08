@@ -7,7 +7,12 @@ from rich.console import Console
 
 from openjarvis.core.paths import get_config_dir
 from openjarvis.memory.store import LocalFactStore
-from openjarvis.personal import PersonalAutomation, PersonalMemory, ProfileStore
+from openjarvis.personal import (
+    PasscodeStore,
+    PersonalAutomation,
+    PersonalMemory,
+    ProfileStore,
+)
 
 
 @click.group("personal")
@@ -89,6 +94,30 @@ def profile_list() -> None:
         return
     for item in profiles:
         Console().print(f"- {item.name}")
+
+
+@personal.group("security")
+def security() -> None:
+    """Manage the JARVIS security passcode."""
+
+
+@security.command("set-passcode")
+def set_passcode() -> None:
+    """Set or replace the local passcode used for sensitive actions."""
+    first = click.prompt("Passcode", hide_input=True, confirmation_prompt=False)
+    second = click.prompt("Repeat passcode", hide_input=True, confirmation_prompt=False)
+    if first != second:
+        raise click.ClickException("Passcodes do not match")
+    store = PasscodeStore(get_config_dir() / "security.db")
+    try:
+        store.set_passcode(first)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    finally:
+        store.close()
+    Console().print(
+        "[green]Passcode enabled. Sensitive actions require verification.[/green]"
+    )
 
 
 __all__ = ["personal"]
