@@ -708,7 +708,7 @@ export async function sendblueTest(
   return res.json();
 }
 
-export async function sendblueHealth(): Promise<{ channel_connected: boolean; bridge_wired: boolean; ready: boolean }> {
+export async function sendblueHealth(): Promise<{ channel_connected: boolean; bridge_wired: boolean; webhook_registered: boolean; ready: boolean }> {
   const res = await apiFetch(`/v1/channels/sendblue/health`);
   if (!res.ok) return { channel_connected: false, bridge_wired: false, ready: false };
   return res.json();

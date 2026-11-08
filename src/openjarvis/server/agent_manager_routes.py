@@ -1916,6 +1916,7 @@ def create_agent_manager_router(
             api_key_id = config.get("api_key_id") or config.get("api_key", "")
             api_secret_key = config.get("api_secret_key") or config.get("api_secret", "")
             from_number = config.get("from_number") or config.get("phone_number", "")
+            webhook_secret = config.get("webhook_secret", "")
             if api_key_id and api_secret_key:
                 try:
                     from openjarvis.channels.sendblue import (
@@ -1926,6 +1927,7 @@ def create_agent_manager_router(
                         api_key_id=api_key_id,
                         api_secret_key=api_secret_key,
                         from_number=from_number,
+                        webhook_secret=webhook_secret,
                     )
                     sb_channel.connect()
                     # Store on app state so webhook route can use it
@@ -2585,6 +2587,7 @@ def create_agent_manager_router(
         return {
             "channel_connected": sb is not None,
             "bridge_wired": has_bridge,
+            "webhook_registered": bool(sb and getattr(sb, "webhook_secret", "")),
             "ready": sb is not None and has_bridge,
         }
 
