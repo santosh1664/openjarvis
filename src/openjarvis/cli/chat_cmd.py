@@ -385,6 +385,18 @@ def chat(
             if not user_input:
                 continue
 
+        response_language = (
+            getattr(voice_session, "last_detected_language", None)
+            if voice_mode and voice_session is not None
+            else None
+        )
+        generation_input = user_input
+        if response_language:
+            generation_input = (
+                f"{user_input}\n\n[Response instruction: reply in the same language "
+                f"as the user. Detected language code: {response_language}.]"
+            )
+
         # Handle slash commands
         cmd = user_input.lower()
         if cmd in ("/quit", "/exit", "/q"):
@@ -478,13 +490,14 @@ def chat(
                 for msg in history[:-1]:
                     if msg.role != Role.SYSTEM:
                         agent_context.conversation.add(msg)
-                response = agent.run(user_input, context=agent_context)
+                response = agent.run(generation_input, context=agent_context)
                 content = (
                     response.content if hasattr(response, "content") else str(response)
                 )
             else:
                 result = engine.generate(
-                    generation_history,
+                    generation_history[:-1]
+                    + [Message(role=Role.USER, content=generation_input)],
                     model=model,
                     **engine_kwargs,
                 )

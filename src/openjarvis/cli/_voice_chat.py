@@ -46,6 +46,7 @@ class VoiceSession:
         self._tts_attempted: set[str] = set()
         self._voice_prefs: tuple[str, str, float] | None = None
         self._voice_warned: set[str] = set()
+        self.last_detected_language: str | None = None
 
     def get_stt_backend(self) -> Any:
         """Resolve and health-check STT once, then reuse the loaded backend."""
@@ -123,7 +124,10 @@ def read_voice_input(console: Any, session: VoiceSession) -> Optional[str] | obj
     except (EOFError, KeyboardInterrupt):
         return VOICE_EXIT
     typed = typed.strip()
-    return typed if typed else record_voice(console, session)
+    if typed:
+        session.last_detected_language = None
+        return typed
+    return record_voice(console, session)
 
 
 def record_voice(
@@ -163,6 +167,10 @@ def record_voice(
             audio_bytes, format="wav", language=active_session.get_stt_language()
         )
         text = result.text.strip()
+        detected_language = getattr(result, "language", None)
+        active_session.last_detected_language = (
+            str(detected_language).strip().lower() or None
+        )
         if text:
             console.print(f"[bold]You (voice):[/bold] {_terminal_safe_text(text)}")
             return text

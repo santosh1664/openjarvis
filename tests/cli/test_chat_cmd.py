@@ -228,6 +228,25 @@ class TestVoiceInput:
             b"wav", format="wav", language=expected
         )
 
+    def test_detected_language_is_retained_for_response_routing(self) -> None:
+        backend = MagicMock()
+        backend.transcribe.return_value = SimpleNamespace(text="నమస్కారం", language="te")
+        session = VoiceSession(JarvisConfig())
+
+        with (
+            patch(
+                "openjarvis.speech._discovery.get_speech_backend",
+                return_value=backend,
+            ),
+            patch(
+                "openjarvis.speech.voice_io.record_until_silence",
+                return_value=b"wav",
+            ),
+        ):
+            assert record_voice(MagicMock(), session) == "నమస్కారం"
+
+        assert session.last_detected_language == "te"
+
     def test_voice_transcript_cannot_inject_rich_hyperlink(self) -> None:
         backend = MagicMock()
         backend.transcribe.return_value = SimpleNamespace(
