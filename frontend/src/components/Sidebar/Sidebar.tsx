@@ -168,6 +168,21 @@ export function Sidebar() {
             )}
           </button>
 
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="mx-3 mb-2 w-[calc(100%-1.5rem)] rounded-lg px-3 py-1.5 text-[11px] text-left transition-colors cursor-pointer"
+            style={{
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
+              background: 'transparent',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-tertiary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            aria-label="Change provider or model"
+          >
+            Change provider / model
+          </button>
+
           {/* Search */}
           <div className="px-3 mb-2">
             <div
