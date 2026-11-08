@@ -117,6 +117,7 @@ if not _DATA_BOUNDARY_BOOTSTRAP:
     from openjarvis.cli.gui_cmd import gui
     from openjarvis.cli.host_cmd import host
     from openjarvis.cli.init_cmd import init
+    from openjarvis.cli.install_cmd import install
     from openjarvis.cli.memory_cmd import memory
     from openjarvis.cli.mine_cmd import mine
     from openjarvis.cli.model import model
@@ -128,8 +129,8 @@ if not _DATA_BOUNDARY_BOOTSTRAP:
     from openjarvis.cli.registry_cmd import registry
     from openjarvis.cli.scheduler_cmd import scheduler
     from openjarvis.cli.self_update_cmd import self_update
-    from openjarvis.cli.setup_cmd import setup
     from openjarvis.cli.serve import serve
+    from openjarvis.cli.setup_cmd import setup
     from openjarvis.cli.skill_cmd import skill
     from openjarvis.cli.telemetry_cmd import telemetry
     from openjarvis.cli.tool_cmd import tool
@@ -137,6 +138,7 @@ if not _DATA_BOUNDARY_BOOTSTRAP:
     from openjarvis.cli.workflow_cmd import workflow
 
     cli.add_command(init, "init")
+    cli.add_command(install, "install")
     cli.add_command(ask, "ask")
     cli.add_command(chat, "chat")
     cli.add_command(serve, "serve")
