@@ -121,3 +121,25 @@ def test_personal_diagnostics_repairs_config_dir(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert "Config directory: ready" in result.output
     assert "Repaired: config_dir" in result.output
+
+
+def test_personal_sync_exports_and_imports_bundle(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+    from openjarvis.personal import OfflineSyncStore
+
+    store = OfflineSyncStore(tmp_path / "sync.db", device_id="laptop")
+    store.record("memory", {"key": "style", "value": "concise"})
+    store.close()
+    output = tmp_path / "bundle.json"
+
+    exported = CliRunner().invoke(
+        personal, ["sync", "export", "--device-id", "laptop", str(output)]
+    )
+    (tmp_path / "sync.db").unlink()
+    imported = CliRunner().invoke(
+        personal, ["sync", "import", "--device-id", "phone", str(output)]
+    )
+
+    assert exported.exit_code == 0, exported.output
+    assert imported.exit_code == 0, imported.output
+    assert "Imported 1 new" in imported.output

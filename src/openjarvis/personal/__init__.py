@@ -10,6 +10,7 @@ from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolic
 from .profiles import Profile, ProfileMessage, ProfileStore
 from .providers import ProviderRouter
 from .runner import BoundedRunner, RunnerLimits, RunnerOutcome, Step
+from .sync import OfflineSyncStore
 from .tasks import Task, TaskStatus, TaskStore
 from .voice import PersonalVoiceService
 
@@ -29,6 +30,7 @@ __all__ = [
     "PersonalMemory",
     "PersonalKnowledgeGraph",
     "PersonalVoiceService",
+    "OfflineSyncStore",
     "RunnerLimits",
     "RunnerOutcome",
     "Step",
