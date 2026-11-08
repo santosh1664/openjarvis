@@ -146,6 +146,36 @@ def provider_status() -> None:
         Console().print("Fallback models: " + " -> ".join(fallback))
 
 
+@provider.command("setup")
+@click.option(
+    "--output",
+    type=click.Path(dir_okay=False, writable=True),
+    default=".env.openjarvis.example",
+    show_default=True,
+)
+def provider_setup(output: str) -> None:
+    """Create a secret-free provider setup template and show readiness."""
+    lines = [
+        "# Copy values into your shell or a protected local environment file.",
+        "# JARVIS never stores or prints these values.",
+        "OPENROUTER_API_KEY=",
+        "ANTHROPIC_API_KEY=",
+        "NVIDIA_API_KEY=",
+        "NIM_API_KEY=",
+        "HF_TOKEN=",
+        "HUGGINGFACEHUB_API_TOKEN=",
+        "OPENAI_API_KEY=",
+    ]
+    destination = Path(output)
+    if destination.exists():
+        raise click.ClickException(f"refusing to overwrite existing file: {output}")
+    destination.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    configured = ProviderRouter().available()
+    click.echo(f"Provider template created: {output}")
+    click.echo("Configured providers: " + (", ".join(configured) or "none"))
+    click.echo("Run `jarvis personal provider status` after setting keys.")
+
+
 @personal.command("status")
 def status() -> None:
     """Show a local dashboard summary for the personal JARVIS runtime."""

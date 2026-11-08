@@ -58,6 +58,16 @@ def test_personal_provider_status_redacts_keys(monkeypatch):
     assert "secret-value" not in result.output
 
 
+def test_personal_provider_setup_creates_secret_free_template(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(personal, ["provider", "setup"])
+
+    assert result.exit_code == 0, result.output
+    template = (tmp_path / ".env.openjarvis.example").read_text()
+    assert "OPENROUTER_API_KEY=" in template
+    assert "secret" not in template.lower()
+
+
 def test_personal_status_summarizes_local_state(tmp_path, monkeypatch):
     monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
 
