@@ -46,3 +46,13 @@ def test_personal_security_set_passcode(tmp_path, monkeypatch):
 
     assert result.exit_code == 0, result.output
     assert "Passcode enabled" in result.output
+
+
+def test_personal_provider_status_redacts_keys(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "secret-value")
+
+    result = CliRunner().invoke(personal, ["provider", "status"])
+
+    assert result.exit_code == 0, result.output
+    assert "openrouter: configured" in result.output
+    assert "secret-value" not in result.output

@@ -12,6 +12,7 @@ from openjarvis.personal import (
     PersonalAutomation,
     PersonalMemory,
     ProfileStore,
+    ProviderRouter,
 )
 
 
@@ -118,6 +119,24 @@ def set_passcode() -> None:
     Console().print(
         "[green]Passcode enabled. Sensitive actions require verification.[/green]"
     )
+
+
+@personal.group("provider")
+def provider() -> None:
+    """Inspect configured inference providers."""
+
+
+@provider.command("status")
+def provider_status() -> None:
+    """Show provider availability without displaying secrets."""
+    router = ProviderRouter()
+    for name, info in router.status().items():
+        state = "configured" if info["configured"] else "not configured"
+        Console().print(f"- {name}: {state} ({info['env_var']})")
+    Console().print(f"Preferred provider: {router.choose() or 'local-only'}")
+    fallback = router.fallback_models()
+    if fallback:
+        Console().print("Fallback models: " + " -> ".join(fallback))
 
 
 __all__ = ["personal"]
