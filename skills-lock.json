@@ -829,6 +829,12 @@
       "skillPath": "skills/bionemo-genomics-workflow-acceleration/SKILL.md",
       "computedHash": "4747a3d874112255e317e72fcd041efc5a45ac0a4cd0d70ab65cb1f19380af4c"
     },
+    "graphify": {
+      "source": "Graphify-Labs/graphify",
+      "sourceType": "github",
+      "skillPath": "graphify/SKILL.md",
+      "computedHash": "b0f0433a940e1e5f08336857c3e53da39bbae6ee06f632dc450235bbafe9da8c"
+    },
     "holoscan-app-debug-build-run": {
       "source": "NVIDIA/skills",
       "sourceType": "github",
