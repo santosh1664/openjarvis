@@ -2509,7 +2509,8 @@ def create_agent_manager_router(
                         "Content-Type": "application/json",
                     },
                     json={
-                        "receive": webhook_url,
+                        "webhooks": [webhook_url],
+                        "type": "receive",
                     },
                 )
             return {
