@@ -226,6 +226,8 @@ interface AppState {
 
   // Actions: UI
   setCommandPaletteOpen: (open: boolean) => void;
+  commandPaletteTab: 'installed' | 'catalogue' | 'cloud';
+  setCommandPaletteTab: (tab: 'installed' | 'catalogue' | 'cloud') => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   toggleSystemPanel: () => void;
@@ -289,6 +291,7 @@ export const useAppStore = create<AppState>((set, get) => {
     settings: loadSettings(),
 
     commandPaletteOpen: false,
+    commandPaletteTab: 'installed',
     sidebarOpen: true,
     systemPanelOpen: true,
 
@@ -551,6 +554,7 @@ export const useAppStore = create<AppState>((set, get) => {
     // ── UI ──────────────────────────────────────────────────────────
 
     setCommandPaletteOpen: (open: boolean) => set({ commandPaletteOpen: open }),
+    setCommandPaletteTab: (tab) => set({ commandPaletteTab: tab }),
     toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
     setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
     toggleSystemPanel: () => set((s) => ({ systemPanelOpen: !s.systemPanelOpen })),

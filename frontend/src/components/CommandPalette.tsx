@@ -105,7 +105,9 @@ type Tab = 'installed' | 'catalogue' | 'cloud';
 export function CommandPalette() {
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [tab, setTab] = useState<Tab>('installed');
+  const commandPaletteTab = useAppStore((s) => s.commandPaletteTab);
+  const setCommandPaletteTab = useAppStore((s) => s.setCommandPaletteTab);
+  const [tab, setTab] = useState<Tab>(commandPaletteTab);
   const [pulling, setPulling] = useState<string | null>(null);
   const [pullError, setPullError] = useState<string | null>(null);
   const [pullSuccess, setPullSuccess] = useState<string | null>(null);
@@ -123,6 +125,10 @@ export function CommandPalette() {
   const setSelectedModel = useAppStore((s) => s.setSelectedModel);
   const setModels = useAppStore((s) => s.setModels);
   const setCommandPaletteOpen = useAppStore((s) => s.setCommandPaletteOpen);
+
+  useEffect(() => {
+    setTab(commandPaletteTab);
+  }, [commandPaletteTab]);
 
   const installedIds = new Set(models.map((m) => m.id));
   const desktopKeyStorage = isTauri();
@@ -310,7 +316,7 @@ export function CommandPalette() {
           {(['installed', 'catalogue', 'cloud'] as Tab[]).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => { setTab(t); setCommandPaletteTab(t); }}
               className="flex-1 px-3 py-2.5 text-xs font-medium transition-colors cursor-pointer"
               style={{
                 color: tab === t ? 'var(--color-accent)' : 'var(--color-text-tertiary)',

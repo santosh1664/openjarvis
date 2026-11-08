@@ -32,6 +32,7 @@ export function Sidebar() {
   const selectedModel = useAppStore((s) => s.selectedModel);
   const serverInfo = useAppStore((s) => s.serverInfo);
   const setCommandPaletteOpen = useAppStore((s) => s.setCommandPaletteOpen);
+  const setCommandPaletteTab = useAppStore((s) => s.setCommandPaletteTab);
   const modelLoading = useAppStore((s) => s.modelLoading);
   const deepResearch = useAppStore((s) => s.deepResearch);
 
@@ -169,7 +170,7 @@ export function Sidebar() {
           </button>
 
           <button
-            onClick={() => setCommandPaletteOpen(true)}
+            onClick={() => { setCommandPaletteTab('cloud'); setCommandPaletteOpen(true); }}
             className="mx-3 mb-2 w-[calc(100%-1.5rem)] rounded-lg px-3 py-1.5 text-[11px] text-left transition-colors cursor-pointer"
             style={{
               color: 'var(--color-text-secondary)',
