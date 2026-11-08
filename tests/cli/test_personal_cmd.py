@@ -110,3 +110,14 @@ def test_personal_knowledge_commands_are_local(tmp_path, monkeypatch):
     assert found.exit_code == 0, found.output
     assert "personal assistant" in found.output
     assert "Alice --works_on--> OpenJarvis" in found.output
+
+
+def test_personal_diagnostics_repairs_config_dir(tmp_path, monkeypatch):
+    config = tmp_path / "config"
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: config)
+
+    result = CliRunner().invoke(personal, ["diagnostics", "--repair"])
+
+    assert result.exit_code == 0, result.output
+    assert "Config directory: ready" in result.output
+    assert "Repaired: config_dir" in result.output

@@ -10,6 +10,7 @@ from openjarvis.memory.store import LocalFactStore
 from openjarvis.personal import (
     PasscodeStore,
     PersonalAutomation,
+    PersonalDiagnostics,
     PersonalKnowledgeGraph,
     PersonalMemory,
     ProfileStore,
@@ -252,6 +253,20 @@ def knowledge_find(text: str) -> None:
         click.echo(f"{entity['name']} ({entity['kind']}): {entity['description']}")
     for source, predicate, target in links:
         click.echo(f"{source} --{predicate}--> {target}")
+
+
+@personal.command("diagnostics")
+@click.option("--repair", is_flag=True, help="Repair safe missing local state.")
+def diagnostics(repair: bool) -> None:
+    """Check and optionally repair local JARVIS state."""
+    report = PersonalDiagnostics(get_config_dir()).run(repair=repair)
+    click.echo("JARVIS Diagnostics")
+    click.echo(f"Config directory: {report['config_dir']}")
+    click.echo(f"Config permissions: {report['config_permissions']}")
+    providers = report["providers"]
+    configured = [name for name, active in providers.items() if active]
+    click.echo("Configured providers: " + (", ".join(configured) or "none"))
+    click.echo("Repaired: " + (", ".join(report["repaired"]) or "none"))
 
 
 __all__ = ["personal"]

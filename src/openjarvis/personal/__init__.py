@@ -3,6 +3,7 @@
 from .auth import PasscodeStore
 from .automation import PersonalAutomation
 from .coding import AutonomousCodingService
+from .diagnostics import PersonalDiagnostics
 from .graph import PersonalKnowledgeGraph
 from .memory import PersonalMemory
 from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolicy
@@ -16,6 +17,7 @@ __all__ = [
     "BoundedRunner",
     "AutonomousCodingService",
     "PersonalAutomation",
+    "PersonalDiagnostics",
     "PasscodeStore",
     "PermissionAuditLog",
     "PermissionDecision",
