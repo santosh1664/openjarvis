@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable, Sequence
+from typing import Any
 
 
 class ProviderRouter:
@@ -50,6 +52,19 @@ class ProviderRouter:
             elif provider == "openai":
                 candidates.append("gpt-4o-mini" if task == "chat" else "gpt-4o")
         return candidates
+
+    @staticmethod
+    def with_fallback(invoke: Callable[[str], Any], models: Sequence[str]) -> Any:
+        """Invoke candidates in order and raise a summarized failure if all fail."""
+        failures: list[str] = []
+        for model in models:
+            try:
+                return invoke(model)
+            except Exception as exc:
+                failures.append(f"{model}: {exc}")
+        if not failures:
+            raise ValueError("no provider models configured")
+        raise RuntimeError("all providers failed: " + "; ".join(failures))
 
 
 __all__ = ["ProviderRouter"]

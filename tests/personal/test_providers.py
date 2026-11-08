@@ -22,3 +22,32 @@ def test_provider_router_never_returns_secret_values(monkeypatch):
 
     assert status["openrouter"] == {"configured": True, "env_var": "OPENROUTER_API_KEY"}
     assert "secret" not in repr(status)
+
+
+def test_provider_router_falls_back_after_provider_failure():
+    router = ProviderRouter()
+    calls = []
+
+    def invoke(model):
+        calls.append(model)
+        if model == "first":
+            raise RuntimeError("provider unavailable")
+        return {"model": model, "content": "ok"}
+
+    result = router.with_fallback(invoke, ["first", "second"])
+
+    assert result == {"model": "second", "content": "ok"}
+    assert calls == ["first", "second"]
+
+
+def test_provider_router_reports_all_failures():
+    router = ProviderRouter()
+
+    try:
+        router.with_fallback(
+            lambda _model: (_ for _ in ()).throw(RuntimeError("down")), ["a", "b"]
+        )
+    except RuntimeError as exc:
+        assert "all providers failed" in str(exc)
+    else:
+        raise AssertionError("expected fallback failure")
