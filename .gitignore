@@ -79,6 +79,9 @@ frontend/src-tauri/target/
 # Worktrees
 .worktrees/
 
+# Installed third-party agent skills (recreate from skills-lock.json)
+.agents/
+
 # Rust
 target/
 
