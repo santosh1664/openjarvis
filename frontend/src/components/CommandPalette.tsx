@@ -72,6 +72,15 @@ const CLOUD_PROVIDERS: CloudProvider[] = [
     ],
   },
   {
+    name: 'NVIDIA NIM',
+    envKey: 'NVIDIA_API_KEY',
+    models: [
+      { id: 'nvidia/llama-3.3-nemotron-super-49b-v1', desc: 'Nemotron Super via NVIDIA NIM' },
+      { id: 'nvidia/meta/llama-3.1-405b-instruct', desc: 'Llama 3.1 405B via NVIDIA NIM' },
+      { id: 'nvidia/mistralai/mixtral-8x22b-instruct-v0.1', desc: 'Mixtral 8x22B via NVIDIA NIM' },
+    ],
+  },
+  {
     name: 'Atlas Cloud',
     envKey: 'ATLASCLOUD_API_KEY',
     models: [
