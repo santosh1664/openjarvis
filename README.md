@@ -52,6 +52,27 @@ Then `jarvis` to start. The Rust extension and larger models continue downloadin
 
 Platform-specific notes (WSL2 setup, native-Windows scheduled-task service, desktop prerequisites, manual / contributor install): see the [installation docs](https://open-jarvis.github.io/OpenJarvis/getting-started/install/).
 
+### Personal JARVIS one-command setup
+
+This fork includes a local-first personal JARVIS layer. From a checkout, run:
+
+```bash
+uv sync
+uv run jarvis install
+```
+
+The master installer initializes local state, creates a secret-free provider
+template, runs diagnostics, and builds the graphical dashboard. Start the
+assistant with `uv run jarvis chat`, or open the dashboard with `uv run jarvis gui`.
+Use `uv run jarvis install --local-only` to disable cloud providers, or
+`--no-frontend` on a headless machine.
+
+Personal profiles, memories, automations, passcodes, knowledge graphs, sync
+databases, logs, and API keys live outside the repository under the local
+OpenJarvis data directory. They are not intended to be committed or uploaded.
+The repository tracks only source code, tests, and secret-free configuration
+templates.
+
 ## Quick Start
 
 ```bash
@@ -107,6 +128,27 @@ jarvis bench skills --max-samples 5 --seeds 42
 Import from [Hermes Agent](https://github.com/NousResearch/hermes-agent) (~150 skills), [OpenClaw](https://github.com/openclaw/skills) (~13,700 community skills), or any GitHub repo. Skills follow the [agentskills.io](https://agentskills.io/specification) open standard.
 
 See the [Skills User Guide](https://open-jarvis.github.io/OpenJarvis/user-guide/skills/) and [Skills Tutorial](https://open-jarvis.github.io/OpenJarvis/tutorials/skills-workflow/) for details.
+
+This fork also keeps a reproducible `skills-lock.json` for installed community
+skill sources, including NVIDIA skills, Superpowers, Ponytail, and Graphify.
+The installed `.agents/` skill payload remains local and is intentionally
+ignored by Git.
+
+### Personal dashboard office floor
+
+The graphical dashboard includes a live Office Floor that visualizes active
+agents as desk workers. It shows working, waiting-for-approval, completed, and
+idle states, current task labels, and bounded progress indicators. Agent events
+can update the scene in real time while the dashboard remains usable when no
+agents are running.
+
+```bash
+uv run jarvis gui
+# open Dashboard in the browser interface
+```
+
+Camera, gesture control, and holographic display features are intentionally not
+included in this release.
 
 ### Built-in Agents
 
