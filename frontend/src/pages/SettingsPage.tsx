@@ -76,17 +76,13 @@ function ApiKeyInput({
   const [error, setError] = useState('');
   const desktopKeyStorage = isTauri();
   const serverToolStorage = !desktopKeyStorage && !!toolName;
-  const canManage = desktopKeyStorage || serverToolStorage;
+  const canManage = desktopKeyStorage || serverToolStorage || !toolName;
 
   const refresh = useCallback(async () => {
-    if (!canManage) {
-      setHasKey(false);
-      return;
-    }
     try {
-      const status = desktopKeyStorage
+      const status = !toolName
         ? await getCloudKeyStatus()
-        : await fetchToolCredentialStatus(toolName!);
+        : await fetchToolCredentialStatus(toolName);
       setHasKey(!!status[keyName]);
     } catch {
       setHasKey(false);
@@ -104,7 +100,7 @@ function ApiKeyInput({
     if (!next) return;
     setError('');
     try {
-      if (desktopKeyStorage) {
+      if (desktopKeyStorage || !toolName) {
         await saveCloudKey(keyName, next);
       } else if (toolName) {
         await saveToolCredentials(toolName, { [keyName]: next });
@@ -124,7 +120,7 @@ function ApiKeyInput({
   const remove = async () => {
     setError('');
     try {
-      if (desktopKeyStorage) {
+      if (desktopKeyStorage || !toolName) {
         await saveCloudKey(keyName, '');
       } else if (toolName) {
         await deleteToolCredential(toolName, keyName);
@@ -172,10 +168,6 @@ function CloudProviderStatus({ label, keyName }: { label: string; keyName: strin
   const desktopKeyStorage = isTauri();
 
   const refresh = useCallback(async () => {
-    if (!desktopKeyStorage) {
-      setHasKey(false);
-      return;
-    }
     try {
       const status = await getCloudKeyStatus();
       setHasKey(!!status[keyName]);
@@ -629,6 +621,8 @@ export function SettingsPage() {
                 <CloudProviderStatus label="Google" keyName="GEMINI_API_KEY" />
                 <CloudProviderStatus label="OpenRouter" keyName="OPENROUTER_API_KEY" />
                 <CloudProviderStatus label="Atlas Cloud" keyName="ATLASCLOUD_API_KEY" />
+                <CloudProviderStatus label="NVIDIA NIM" keyName="NVIDIA_API_KEY" />
+                <CloudProviderStatus label="Hugging Face" keyName="HF_TOKEN" />
               </div>
             </SettingRow>
           </Section>
@@ -649,6 +643,12 @@ export function SettingsPage() {
             </SettingRow>
             <SettingRow label="Atlas Cloud" description="Models routed through Atlas Cloud">
               <ApiKeyInput keyName="ATLASCLOUD_API_KEY" placeholder="Atlas Cloud API key" />
+            </SettingRow>
+            <SettingRow label="NVIDIA NIM" description="NVIDIA-hosted models">
+              <ApiKeyInput keyName="NVIDIA_API_KEY" placeholder="NVIDIA API key" />
+            </SettingRow>
+            <SettingRow label="Hugging Face" description="Models hosted by Hugging Face">
+              <ApiKeyInput keyName="HF_TOKEN" placeholder="hf_..." />
             </SettingRow>
           </Section>
 

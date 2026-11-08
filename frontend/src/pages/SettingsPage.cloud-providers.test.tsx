@@ -9,6 +9,10 @@ describe('desktop cloud provider settings', () => {
     const html = renderToStaticMarkup(<SettingsPage />);
 
     expect(html).toContain('Atlas Cloud');
+    expect(html).toContain('NVIDIA NIM');
+    expect(html).toContain('Hugging Face');
+    expect(html).toContain('NVIDIA API key');
+    expect(html).toContain('hf_...');
     const atlasKeyInput = html.match(/<input[^>]*placeholder="Atlas Cloud API key"[^>]*>/)?.[0];
     expect(atlasKeyInput).toBeDefined();
     expect(atlasKeyInput).not.toContain('disabled');
