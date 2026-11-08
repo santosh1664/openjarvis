@@ -67,6 +67,9 @@ def test_personal_status_summarizes_local_state(tmp_path, monkeypatch):
     assert "JARVIS Personal Status" in result.output
     assert "Profiles: 0/3" in result.output
     assert "Passcode: not configured" in result.output
+    assert "Pending approvals: 0" in result.output
+    assert "Local diagnostics: ready" in result.output
+    assert "Suggestions: 0" in result.output
 
 
 def test_personal_approvals_lists_pending_actions(tmp_path, monkeypatch):

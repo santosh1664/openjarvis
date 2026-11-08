@@ -162,12 +162,31 @@ def status() -> None:
         automation.close()
         passcode.close()
     providers = ProviderRouter()
+    diagnostics_report = PersonalDiagnostics(config_dir).run()
+    suggestions = ProactiveAssistant(config_dir).suggestions(limit=3)
+    approvals_path = config_dir / "approvals.db"
+    pending_approvals = 0
+    if approvals_path.exists():
+        from openjarvis.tools.approval_store import ApprovalStore
+
+        approval_store = ApprovalStore(approvals_path)
+        try:
+            pending_approvals = len(approval_store.list_pending())
+        finally:
+            approval_store.close()
     console = Console()
     console.print("[bold]JARVIS Personal Status[/bold]")
     console.print(f"Profiles: {profile_count}/3")
     console.print(f"Active automations: {automation_count}")
     console.print(f"Passcode: {passcode_state}")
     console.print(f"Providers: {', '.join(providers.available()) or 'local-only'}")
+    console.print(f"Pending approvals: {pending_approvals}")
+    console.print(f"Local diagnostics: {diagnostics_report['config_dir']}")
+    console.print(
+        "Offline sync: "
+        + ("available" if (config_dir / "sync.db").exists() else "not initialized")
+    )
+    console.print(f"Suggestions: {len(suggestions)}")
 
 
 @personal.command("approvals")
