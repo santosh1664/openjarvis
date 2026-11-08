@@ -1,5 +1,6 @@
 """Local-first primitives for a personal JARVIS."""
 
+from .automation import PersonalAutomation
 from .coding import AutonomousCodingService
 from .memory import PersonalMemory
 from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolicy
@@ -10,6 +11,7 @@ from .voice import PersonalVoiceService
 __all__ = [
     "BoundedRunner",
     "AutonomousCodingService",
+    "PersonalAutomation",
     "PermissionAuditLog",
     "PermissionDecision",
     "PermissionPolicy",
