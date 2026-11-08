@@ -51,10 +51,10 @@ def test_install_gui_starts_graphical_frontend(tmp_path, monkeypatch):
     )
     started = []
     monkeypatch.setattr(
-        "openjarvis.cli.gui_cmd.gui.main", lambda **_kwargs: started.append(True)
+        "openjarvis.cli.gui_cmd.gui.main", lambda **kwargs: started.append(kwargs)
     )
 
     result = CliRunner().invoke(install, ["--no-frontend", "--gui"])
 
     assert result.exit_code == 0, result.output
-    assert started == [True]
+    assert started == [{"args": [], "standalone_mode": False}]

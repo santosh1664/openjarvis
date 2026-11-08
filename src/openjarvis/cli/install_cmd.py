@@ -62,7 +62,10 @@ def install(
     if gui:
         from openjarvis.cli.gui_cmd import gui as gui_command
 
-        gui_command.main(standalone_mode=False)
+        # Do not let the parent ``jarvis install --gui`` argv leak into the
+        # nested command; Click would otherwise parse ``--gui`` as a GUI
+        # option and abort before opening the dashboard.
+        gui_command.main(args=[], standalone_mode=False)
     elif start or voice:
         from openjarvis.cli.chat_cmd import chat
 
