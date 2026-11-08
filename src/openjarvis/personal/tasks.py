@@ -100,6 +100,18 @@ class TaskStore:
         ).fetchone()
         return self._from_row(row) if row else None
 
+    def list(self, status: TaskStatus | str | None = None) -> list[Task]:
+        query = (
+            "SELECT id, title, status, created_at, updated_at, metadata, result, error "
+            "FROM personal_tasks"
+        )
+        params: tuple[str, ...] = ()
+        if status is not None:
+            query += " WHERE status = ?"
+            params = (TaskStatus(status).value,)
+        query += " ORDER BY updated_at DESC"
+        return [self._from_row(row) for row in self._conn.execute(query, params)]
+
     def update(
         self,
         task_id: str,

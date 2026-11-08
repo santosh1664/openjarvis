@@ -7,6 +7,7 @@ from .diagnostics import PersonalDiagnostics
 from .graph import PersonalKnowledgeGraph
 from .memory import PersonalMemory
 from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolicy
+from .proactive import ProactiveAssistant
 from .profiles import Profile, ProfileMessage, ProfileStore
 from .providers import ProviderRouter
 from .runner import BoundedRunner, RunnerLimits, RunnerOutcome, Step
@@ -28,6 +29,7 @@ __all__ = [
     "ProfileMessage",
     "ProfileStore",
     "ProviderRouter",
+    "ProactiveAssistant",
     "PersonalMemory",
     "PersonalKnowledgeGraph",
     "PersonalVoiceService",

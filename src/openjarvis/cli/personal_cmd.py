@@ -16,6 +16,7 @@ from openjarvis.personal import (
     PersonalDiagnostics,
     PersonalKnowledgeGraph,
     PersonalMemory,
+    ProactiveAssistant,
     ProfileStore,
     ProviderRouter,
     WorkspaceInspector,
@@ -320,6 +321,19 @@ def workspace(root: str, max_files: int) -> None:
         click.echo(f"Showing first {len(report['files'])} files")
     for filename in report["files"]:
         click.echo(f"- {filename}")
+
+
+@personal.command("suggest")
+@click.option("--limit", default=10, show_default=True)
+def suggest(limit: int) -> None:
+    """Show bounded local next-action suggestions."""
+    click.echo("JARVIS Proactive Suggestions")
+    suggestions = ProactiveAssistant(get_config_dir()).suggestions(limit=limit)
+    if not suggestions:
+        click.echo("No suggestions.")
+        return
+    for item in suggestions:
+        click.echo(f"- {item}")
 
 
 __all__ = ["personal"]

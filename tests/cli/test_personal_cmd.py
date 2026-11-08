@@ -154,3 +154,17 @@ def test_personal_workspace_reports_files(tmp_path):
     assert result.exit_code == 0, result.output
     assert "Workspace Intelligence" in result.output
     assert "README.md" in result.output
+
+
+def test_personal_suggest_reports_pending_tasks(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+    from openjarvis.personal import TaskStore
+
+    store = TaskStore(tmp_path / "personal_tasks.db")
+    store.create("Review release notes")
+    store.close()
+
+    result = CliRunner().invoke(personal, ["suggest"])
+
+    assert result.exit_code == 0, result.output
+    assert "Review pending task: Review release notes" in result.output
