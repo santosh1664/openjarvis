@@ -107,6 +107,15 @@ def test_personal_privacy_reports_cloud_boundary(monkeypatch):
     assert "secret" not in result.output
 
 
+def test_personal_privacy_reports_local_only_mode(monkeypatch):
+    monkeypatch.setenv("OPENJARVIS_LOCAL_ONLY", "true")
+
+    result = CliRunner().invoke(personal, ["privacy"])
+
+    assert result.exit_code == 0, result.output
+    assert "Local-only mode: enabled" in result.output
+
+
 def test_personal_knowledge_commands_are_local(tmp_path, monkeypatch):
     monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
 

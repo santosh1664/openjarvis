@@ -51,3 +51,14 @@ def test_provider_router_reports_all_failures():
         assert "all providers failed" in str(exc)
     else:
         raise AssertionError("expected fallback failure")
+
+
+def test_provider_router_enforces_local_only_mode(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "secret")
+    monkeypatch.setenv("OPENJARVIS_LOCAL_ONLY", "1")
+
+    router = ProviderRouter()
+
+    assert router.local_only() is True
+    assert router.available() == []
+    assert router.fallback_models() == []

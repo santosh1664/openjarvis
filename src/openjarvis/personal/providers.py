@@ -29,7 +29,17 @@ class ProviderRouter:
         return result
 
     def available(self) -> list[str]:
+        if os.environ.get("OPENJARVIS_LOCAL_ONLY", "").lower() in {"1", "true", "yes"}:
+            return []
         return [name for name, info in self.status().items() if info["configured"]]
+
+    @staticmethod
+    def local_only() -> bool:
+        return os.environ.get("OPENJARVIS_LOCAL_ONLY", "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
 
     def choose(self, preferred: str | None = None) -> str | None:
         available = self.available()

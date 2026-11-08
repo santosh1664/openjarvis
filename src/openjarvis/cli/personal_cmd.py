@@ -249,6 +249,9 @@ def privacy() -> None:
     console = Console()
     console.print("[bold]JARVIS Privacy Center[/bold]")
     console.print("Local processing: available")
+    console.print(
+        "Local-only mode: " + ("enabled" if router.local_only() else "disabled")
+    )
     if configured:
         console.print("Cloud providers configured: " + ", ".join(configured))
         console.print(
