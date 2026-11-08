@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -48,6 +49,35 @@ def install(
     Console().print(f"[green]Master install complete.[/green] State: {config_dir}")
     Console().print(f"Provider template: {template}")
     Console().print(f"Diagnostics: {report['config_dir']}")
+    rust_manifest = Path.cwd() / "rust" / "crates" / "openjarvis-python" / "Cargo.toml"
+    if rust_manifest.exists():
+        rust_script = Path.cwd() / "scripts" / "install" / "install-rust.sh"
+        cargo_bin = Path.home() / ".cargo" / "bin"
+        if (
+            rust_script.exists()
+            and not shutil.which("cargo")
+            and not (cargo_bin / "cargo").exists()
+        ):
+            subprocess.run(["bash", str(rust_script)], check=True)
+        build_env = os.environ.copy()
+        build_env.pop("CONDA_PREFIX", None)
+        build_env.pop("CONDA_DEFAULT_ENV", None)
+        build_env["PATH"] = f"{cargo_bin}{os.pathsep}{build_env.get('PATH', '')}"
+        subprocess.run(
+            [
+                "uv",
+                "run",
+                "maturin",
+                "develop",
+                "-m",
+                str(rust_manifest),
+                "--quiet",
+            ],
+            cwd=Path.cwd() / "rust",
+            env=build_env,
+            check=True,
+        )
+        Console().print("Native memory extension: built")
     frontend = Path.cwd() / "frontend"
     if no_frontend:
         Console().print("Frontend: skipped")
