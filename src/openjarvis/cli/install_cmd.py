@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import subprocess
+from pathlib import Path
 
 import click
 from rich.console import Console
@@ -16,7 +18,8 @@ from openjarvis.personal import PersonalDiagnostics
 @click.option("--start", is_flag=True, help="Start text chat after installation.")
 @click.option("--voice", is_flag=True, help="Start voice chat after installation.")
 @click.option("--local-only", is_flag=True, help="Disable all cloud providers.")
-def install(start: bool, voice: bool, local_only: bool) -> None:
+@click.option("--no-frontend", is_flag=True, help="Skip graphical dashboard setup.")
+def install(start: bool, voice: bool, local_only: bool, no_frontend: bool) -> None:
     """Install dependencies separately, then initialize all local JARVIS state."""
     previous_local_only = os.environ.get("OPENJARVIS_LOCAL_ONLY")
     if local_only:
@@ -42,6 +45,17 @@ def install(start: bool, voice: bool, local_only: bool) -> None:
     Console().print(f"[green]Master install complete.[/green] State: {config_dir}")
     Console().print(f"Provider template: {template}")
     Console().print(f"Diagnostics: {report['config_dir']}")
+    frontend = Path.cwd() / "frontend"
+    if no_frontend:
+        Console().print("Frontend: skipped")
+    elif (frontend / "package.json").exists():
+        subprocess.run(
+            ["npm", "install", "--engine-strict=false"], cwd=frontend, check=True
+        )
+        subprocess.run(["npm", "run", "build"], cwd=frontend, check=True)
+        Console().print("Frontend: installed and built")
+    else:
+        Console().print("Frontend: not found; CLI mode remains available")
     if start or voice:
         from openjarvis.cli.chat_cmd import chat
 
