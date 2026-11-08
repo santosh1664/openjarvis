@@ -16,6 +16,10 @@ class PermissionDecision:
     reason: str
     created_at: str
 
+    def __bool__(self) -> bool:
+        """Allow decisions to plug into OpenJarvis's existing policy gate."""
+        return self.allowed
+
 
 class PermissionAuditLog:
     def __init__(self, db_path: str | Path) -> None:
@@ -70,7 +74,12 @@ class PermissionPolicy:
         self._audit = audit_log
         self._allowed = frozenset(allowed_capabilities or ())
 
-    def check(self, task_id: str, capability: str) -> PermissionDecision:
+    def check(
+        self,
+        task_id: str,
+        capability: str,
+        tool_name: str | None = None,
+    ) -> PermissionDecision:
         if not capability.strip():
             allowed = False
             reason = "capability is empty"
@@ -80,6 +89,8 @@ class PermissionPolicy:
         else:
             allowed = False
             reason = "capability not allowed"
+        if tool_name:
+            reason = f"{reason} (tool: {tool_name})"
         decision = PermissionDecision(
             task_id, capability, allowed, reason, datetime.now(timezone.utc).isoformat()
         )

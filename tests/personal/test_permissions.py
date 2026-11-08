@@ -19,3 +19,11 @@ def test_policy_allows_explicit_capability(tmp_path):
 
     assert policy.check("task-1", "file:read").allowed
     assert not policy.check("task-1", "network:write").allowed
+
+
+def test_decision_can_gate_existing_tool_executor(tmp_path):
+    audit = PermissionAuditLog(tmp_path / "audit.db")
+    policy = PermissionPolicy(audit, allowed_capabilities={"file:read"})
+
+    assert bool(policy.check("agent-1", "file:read", "file_read"))
+    assert not bool(policy.check("agent-1", "file:write", "file_write"))
