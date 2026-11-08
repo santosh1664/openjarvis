@@ -92,3 +92,21 @@ def test_personal_privacy_reports_cloud_boundary(monkeypatch):
     assert "Privacy Center" in result.output
     assert "anthropic" in result.output
     assert "secret" not in result.output
+
+
+def test_personal_knowledge_commands_are_local(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+
+    added = CliRunner().invoke(
+        personal, ["knowledge", "add", "project", "OpenJarvis", "personal assistant"]
+    )
+    linked = CliRunner().invoke(
+        personal, ["knowledge", "link", "Alice", "works_on", "OpenJarvis"]
+    )
+    found = CliRunner().invoke(personal, ["knowledge", "find", "OpenJarvis"])
+
+    assert added.exit_code == 0, added.output
+    assert linked.exit_code == 0, linked.output
+    assert found.exit_code == 0, found.output
+    assert "personal assistant" in found.output
+    assert "Alice --works_on--> OpenJarvis" in found.output

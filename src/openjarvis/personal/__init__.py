@@ -3,6 +3,7 @@
 from .auth import PasscodeStore
 from .automation import PersonalAutomation
 from .coding import AutonomousCodingService
+from .graph import PersonalKnowledgeGraph
 from .memory import PersonalMemory
 from .permissions import PermissionAuditLog, PermissionDecision, PermissionPolicy
 from .profiles import Profile, ProfileMessage, ProfileStore
@@ -24,6 +25,7 @@ __all__ = [
     "ProfileStore",
     "ProviderRouter",
     "PersonalMemory",
+    "PersonalKnowledgeGraph",
     "PersonalVoiceService",
     "RunnerLimits",
     "RunnerOutcome",

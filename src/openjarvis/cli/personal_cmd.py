@@ -10,6 +10,7 @@ from openjarvis.memory.store import LocalFactStore
 from openjarvis.personal import (
     PasscodeStore,
     PersonalAutomation,
+    PersonalKnowledgeGraph,
     PersonalMemory,
     ProfileStore,
     ProviderRouter,
@@ -203,6 +204,54 @@ def privacy() -> None:
         console.print("Cloud providers configured: none")
         console.print("Cloud use: disabled by availability")
     console.print("API keys: hidden")
+
+
+@personal.group("knowledge")
+def knowledge() -> None:
+    """Manage the local personal knowledge graph."""
+
+
+@knowledge.command("add")
+@click.argument("kind")
+@click.argument("name")
+@click.argument("description", required=False, default="")
+def knowledge_add(kind: str, name: str, description: str) -> None:
+    graph = PersonalKnowledgeGraph(get_config_dir() / "knowledge.db")
+    try:
+        graph.upsert_entity(kind, name, description)
+    finally:
+        graph.close()
+    click.echo(f"Added knowledge entity: {name}")
+
+
+@knowledge.command("link")
+@click.argument("source")
+@click.argument("predicate")
+@click.argument("target")
+def knowledge_link(source: str, predicate: str, target: str) -> None:
+    graph = PersonalKnowledgeGraph(get_config_dir() / "knowledge.db")
+    try:
+        graph.link(source, predicate, target)
+    finally:
+        graph.close()
+    click.echo(f"Linked {source} --{predicate}--> {target}")
+
+
+@knowledge.command("find")
+@click.argument("text")
+def knowledge_find(text: str) -> None:
+    graph = PersonalKnowledgeGraph(get_config_dir() / "knowledge.db")
+    try:
+        entities = graph.find(text)
+        links = [
+            link for entity in entities for link in graph.links_touching(entity["name"])
+        ]
+    finally:
+        graph.close()
+    for entity in entities:
+        click.echo(f"{entity['name']} ({entity['kind']}): {entity['description']}")
+    for source, predicate, target in links:
+        click.echo(f"{source} --{predicate}--> {target}")
 
 
 __all__ = ["personal"]
