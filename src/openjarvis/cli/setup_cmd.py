@@ -13,7 +13,7 @@ from openjarvis.core.config import (
     recommend_model,
 )
 from openjarvis.core.paths import get_config_dir
-from openjarvis.personal import PermissionAuditLog, TaskStore
+from openjarvis.personal import PermissionAuditLog, ProviderRouter, TaskStore
 
 
 @click.command("setup")
@@ -42,6 +42,13 @@ def setup(full: bool, start: bool, voice: bool) -> None:
     Console().print(f"  State directory: {config_dir}")
     Console().print(f"  Inference engine: {engine}")
     Console().print(f"  Recommended model: {model or 'manual selection required'}")
+    providers = ProviderRouter()
+    Console().print(
+        "  Providers: " + (", ".join(providers.available()) or "local-only")
+    )
+    fallback = providers.fallback_models()
+    if fallback:
+        Console().print(f"  Automatic fallback: {' -> '.join(fallback)}")
     if engine == "ollama" and model:
         try:
             probe = httpx.get("http://localhost:11434/api/tags", timeout=1.0)
