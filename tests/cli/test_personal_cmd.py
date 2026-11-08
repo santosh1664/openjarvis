@@ -67,3 +67,17 @@ def test_personal_status_summarizes_local_state(tmp_path, monkeypatch):
     assert "JARVIS Personal Status" in result.output
     assert "Profiles: 0/3" in result.output
     assert "Passcode: not configured" in result.output
+
+
+def test_personal_approvals_lists_pending_actions(tmp_path, monkeypatch):
+    monkeypatch.setattr("openjarvis.cli.personal_cmd.get_config_dir", lambda: tmp_path)
+    from openjarvis.tools.approval_store import ApprovalStore
+
+    store = ApprovalStore(tmp_path / "approvals.db")
+    store.queue_action("file_write", "Write report", {}, "file:write", "medium")
+
+    result = CliRunner().invoke(personal, ["approvals"])
+
+    assert result.exit_code == 0, result.output
+    assert "Write report" in result.output
+    store.close()

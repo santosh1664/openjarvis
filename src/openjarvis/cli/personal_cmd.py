@@ -163,4 +163,26 @@ def status() -> None:
     console.print(f"Providers: {', '.join(providers.available()) or 'local-only'}")
 
 
+@personal.command("approvals")
+def approvals() -> None:
+    """List pending sensitive actions awaiting approval."""
+    from openjarvis.tools.approval_store import ApprovalStore
+
+    store = ApprovalStore(get_config_dir() / "approvals.db")
+    try:
+        pending = store.list_pending()
+    finally:
+        store.close()
+    console = Console()
+    if not pending:
+        console.print("[dim]No pending approvals.[/dim]")
+        return
+    console.print("[bold]Pending approvals[/bold]")
+    for action in pending:
+        console.print(
+            f"- {action.id}: {action.description} "
+            f"({action.action_type}, tier={action.tier})"
+        )
+
+
 __all__ = ["personal"]
