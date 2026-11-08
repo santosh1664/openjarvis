@@ -43,3 +43,36 @@ def test_runner_stops_at_step_bound(tmp_path):
         is RunnerOutcome.STOPPED
     )
     assert store.get(task.id).status is TaskStatus.STOPPED
+
+
+def test_runner_executes_multiple_steps_with_individual_permissions(tmp_path):
+    store, runner = make_runner(tmp_path, {"file:read", "file:write"})
+    task = store.create("Two steps")
+    calls: list[str] = []
+    steps = iter(
+        [
+            Step("file:read", lambda: calls.append("read")),
+            Step("file:write", lambda: {"calls": calls + ["write"]}),
+        ]
+    )
+
+    outcome = runner.run(task.id, lambda: next(steps))
+
+    assert outcome is RunnerOutcome.SUCCEEDED
+    assert calls == ["read"]
+    assert store.get(task.id).result == {"calls": ["read", "write"]}
+
+
+def test_runner_stops_after_failure_limit(tmp_path):
+    store, runner = make_runner(
+        tmp_path, {"task:run"}, RunnerLimits(max_steps=3, max_failures=2)
+    )
+    task = store.create("Failing")
+
+    def fail():
+        raise RuntimeError("broken step")
+
+    outcome = runner.run(task.id, lambda: Step("task:run", fail))
+
+    assert outcome is RunnerOutcome.FAILED
+    assert store.get(task.id).error == "broken step"
