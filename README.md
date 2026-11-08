@@ -58,12 +58,13 @@ This fork includes a local-first personal JARVIS layer. From a checkout, run:
 
 ```bash
 uv sync
-uv run jarvis install
+uv run jarvis install --gui
 ```
 
 The master installer initializes local state, creates a secret-free provider
-template, runs diagnostics, and builds the graphical dashboard. Start the
-assistant with `uv run jarvis chat`, or open the dashboard with `uv run jarvis gui`.
+template, runs diagnostics, builds the graphical dashboard, and opens it in the
+browser. Start text chat directly with `uv run jarvis chat`, or use
+`--no-frontend` for a headless setup.
 Use `uv run jarvis install --local-only` to disable cloud providers, or
 `--no-frontend` on a headless machine.
 

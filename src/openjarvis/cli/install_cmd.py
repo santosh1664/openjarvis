@@ -19,7 +19,10 @@ from openjarvis.personal import PersonalDiagnostics
 @click.option("--voice", is_flag=True, help="Start voice chat after installation.")
 @click.option("--local-only", is_flag=True, help="Disable all cloud providers.")
 @click.option("--no-frontend", is_flag=True, help="Skip graphical dashboard setup.")
-def install(start: bool, voice: bool, local_only: bool, no_frontend: bool) -> None:
+@click.option("--gui", is_flag=True, help="Open the graphical dashboard after setup.")
+def install(
+    start: bool, voice: bool, local_only: bool, no_frontend: bool, gui: bool
+) -> None:
     """Install dependencies separately, then initialize all local JARVIS state."""
     previous_local_only = os.environ.get("OPENJARVIS_LOCAL_ONLY")
     if local_only:
@@ -56,7 +59,11 @@ def install(start: bool, voice: bool, local_only: bool, no_frontend: bool) -> No
         Console().print("Frontend: installed and built")
     else:
         Console().print("Frontend: not found; CLI mode remains available")
-    if start or voice:
+    if gui:
+        from openjarvis.cli.gui_cmd import gui as gui_command
+
+        gui_command.main(standalone_mode=False)
+    elif start or voice:
         from openjarvis.cli.chat_cmd import chat
 
         chat.main(args=["--voice"] if voice else [], standalone_mode=False)

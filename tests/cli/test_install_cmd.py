@@ -37,3 +37,24 @@ def test_install_can_skip_frontend_for_headless_setup(tmp_path, monkeypatch):
 
     assert result.exit_code == 0, result.output
     assert "Frontend: skipped" in result.output
+
+
+def test_install_gui_starts_graphical_frontend(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("openjarvis.cli.install_cmd.get_config_dir", lambda: tmp_path)
+    monkeypatch.setattr("openjarvis.cli.setup_cmd.get_config_dir", lambda: tmp_path)
+    monkeypatch.setattr("openjarvis.cli.setup_cmd.detect_hardware", lambda: object())
+    monkeypatch.setattr("openjarvis.cli.setup_cmd.recommend_engine", lambda _: "local")
+    monkeypatch.setattr("openjarvis.cli.setup_cmd.recommend_model", lambda *_: "model")
+    monkeypatch.setattr(
+        "openjarvis.cli.setup_cmd.generate_default_toml", lambda *_args, **_kwargs: ""
+    )
+    started = []
+    monkeypatch.setattr(
+        "openjarvis.cli.gui_cmd.gui.main", lambda **_kwargs: started.append(True)
+    )
+
+    result = CliRunner().invoke(install, ["--no-frontend", "--gui"])
+
+    assert result.exit_code == 0, result.output
+    assert started == [True]
