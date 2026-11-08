@@ -847,6 +847,38 @@ class TestChatCompletions:
         # ...and the agent must not have been invoked at all.
         assert not agent.run.called
 
+    def test_streaming_cloud_model_bypasses_configured_local_agent(self):
+        """A selected cloud model must not be sent through the local engine."""
+        engine = _make_engine()
+        agent = _make_agent(content="wrong local agent")
+
+        async def fake_cloud_stream(*_args, **_kwargs):
+            yield "cloud response"
+
+        app = create_app(
+            engine,
+            "test-model",
+            agent=agent,
+            bus=EventBus(),
+            config=_test_config(),
+        )
+        client = TestClient(app)
+        with patch(
+            "openjarvis.server.cloud_router.stream_cloud", fake_cloud_stream
+        ):
+            resp = client.post(
+                "/v1/chat/completions",
+                json={
+                    "model": "gemini-2.5-flash",
+                    "messages": [{"role": "user", "content": "Hello"}],
+                    "stream": True,
+                },
+            )
+
+        assert resp.status_code == 200
+        assert "cloud response" in resp.text
+        assert not agent.run.called
+
     def test_finish_reason_default(self, client):
         resp = client.post(
             "/v1/chat/completions",

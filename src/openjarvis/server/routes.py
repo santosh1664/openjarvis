@@ -161,9 +161,11 @@ async def chat_completions(request_body: ChatCompletionRequest, request: Request
     engine = request.app.state.engine
     agent = getattr(request.app.state, "agent", None)
     model = request_body.model
+    use_direct_cloud = _uses_direct_cloud_router(engine, model)
     use_server_agent = (
         agent is not None
         and not request_body.tools
+        and not use_direct_cloud
         and (not request_body.stream or bool(getattr(agent, "_tools", None)))
     )
 

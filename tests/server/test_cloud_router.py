@@ -69,7 +69,7 @@ def test_stream_cloud_uses_nvidia_nim_endpoint(monkeypatch):
     tokens = asyncio.run(collect_tokens())
 
     assert tokens == ["ok"]
-    assert captured["model"] == "llama-3.3-nemotron-super-49b-v1"
+    assert captured["model"] == "nvidia/llama-3.3-nemotron-super-49b-v1"
     assert captured["base_url"] == "https://integrate.api.nvidia.com/v1"
     assert captured["api_key_name"] == "NVIDIA_API_KEY"
 

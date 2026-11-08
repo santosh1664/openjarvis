@@ -289,25 +289,31 @@ async def _stream_google(
     )
 
     async with httpx.AsyncClient(timeout=180) as client:
-        async with client.stream("POST", url, json=payload) as resp:
-            resp.raise_for_status()
-            async for line in resp.aiter_lines():
-                if not line.startswith("data: "):
-                    continue
-                data = line[6:].strip()
-                try:
-                    chunk = json.loads(data)
-                    parts = (
-                        chunk.get("candidates", [{}])[0]
-                        .get("content", {})
-                        .get("parts", [])
-                    )
-                    for part in parts:
-                        text = part.get("text", "")
-                        if text:
-                            yield text
-                except Exception:
-                    pass
+        try:
+            async with client.stream("POST", url, json=payload) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data = line[6:].strip()
+                    try:
+                        chunk = json.loads(data)
+                        parts = (
+                            chunk.get("candidates", [{}])[0]
+                            .get("content", {})
+                            .get("parts", [])
+                        )
+                        for part in parts:
+                            text = part.get("text", "")
+                            if text:
+                                yield text
+                    except Exception:
+                        pass
+        except httpx.HTTPStatusError as exc:
+            raise ValueError(
+                f"Google API error ({exc.response.status_code}); check the model "
+                "name and key"
+            ) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -452,7 +458,7 @@ async def stream_cloud(
                 "NVIDIA_API_KEY not set — add it in the Cloud Models tab"
             )
         async for token in _stream_openai(
-            model.removeprefix(_NVIDIA_PREFIX),
+            model,
             messages,
             temperature,
             max_tokens,
