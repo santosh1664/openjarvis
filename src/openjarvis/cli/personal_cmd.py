@@ -8,6 +8,7 @@ from rich.console import Console
 from openjarvis.core.paths import get_config_dir
 from openjarvis.memory.store import LocalFactStore
 from openjarvis.personal import (
+    OfflineSyncStore,
     PasscodeStore,
     PersonalAutomation,
     PersonalDiagnostics,
@@ -267,6 +268,39 @@ def diagnostics(repair: bool) -> None:
     configured = [name for name, active in providers.items() if active]
     click.echo("Configured providers: " + (", ".join(configured) or "none"))
     click.echo("Repaired: " + (", ".join(report["repaired"]) or "none"))
+
+
+@personal.group("sync")
+def sync() -> None:
+    """Exchange user-controlled offline sync bundles."""
+
+
+@sync.command("export")
+@click.option("--device-id", required=True)
+@click.argument("output", type=click.Path(dir_okay=False, writable=True))
+def sync_export(device_id: str, output: str) -> None:
+    store = OfflineSyncStore(get_config_dir() / "sync.db", device_id=device_id)
+    try:
+        bundle = store.export_bundle()
+    finally:
+        store.close()
+    with open(output, "w", encoding="utf-8") as handle:
+        handle.write(bundle)
+    click.echo(f"Exported offline bundle to {output}")
+
+
+@sync.command("import")
+@click.argument("bundle", type=click.Path(exists=True, dir_okay=False, readable=True))
+@click.option("--device-id", required=True)
+def sync_import(bundle: str, device_id: str) -> None:
+    with open(bundle, encoding="utf-8") as handle:
+        content = handle.read()
+    store = OfflineSyncStore(get_config_dir() / "sync.db", device_id=device_id)
+    try:
+        added = store.import_bundle(content)
+    finally:
+        store.close()
+    click.echo(f"Imported {added} new offline events")
 
 
 __all__ = ["personal"]

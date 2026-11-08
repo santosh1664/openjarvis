@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import AsyncIterator, Sequence
 from typing import Any, Dict, List
 
@@ -40,7 +41,33 @@ class MultiEngine(InferenceEngine):
             except Exception as exc:
                 logger.debug("Failed to list models for %s: %s", key, exc)
 
-    _CLOUD_PREFIXES = ("gpt-", "o1-", "o3-", "o4-", "claude-", "gemini-", "openrouter/")
+    _CLOUD_PREFIXES = (
+        "gpt-",
+        "o1-",
+        "o3-",
+        "o4-",
+        "claude-",
+        "gemini-",
+        "openrouter/",
+        "nvidia/",
+        "huggingface/",
+    )
+
+    def _fallback_models(self, model: str) -> list[str]:
+        if not any(model.startswith(prefix) for prefix in self._CLOUD_PREFIXES):
+            return []
+        candidates = []
+        if os.environ.get("OPENROUTER_API_KEY"):
+            candidates.append("openrouter/auto")
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            candidates.append("claude-sonnet-4-20250514")
+        if os.environ.get("NVIDIA_API_KEY") or os.environ.get("NIM_API_KEY"):
+            candidates.append("nvidia/llama-3.3-nemotron-super-49b-v1")
+        if os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACEHUB_API_TOKEN"):
+            candidates.append("huggingface/auto")
+        if os.environ.get("OPENAI_API_KEY"):
+            candidates.append("gpt-4o-mini")
+        return [candidate for candidate in candidates if candidate != model]
 
     def _engine_for(self, model: str) -> InferenceEngine:
         """Find the engine that owns a model, refreshing the map once if needed."""
@@ -78,13 +105,24 @@ class MultiEngine(InferenceEngine):
         max_tokens: int = 1024,
         **kwargs: Any,
     ) -> Dict[str, Any]:
-        return self._engine_for(model).generate(
-            messages,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        )
+        candidates = [model, *self._fallback_models(model)]
+        failures = []
+        for candidate in candidates:
+            try:
+                return self._engine_for(candidate).generate(
+                    messages,
+                    model=candidate,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    **kwargs,
+                )
+            except Exception as exc:
+                failures.append(f"{candidate}: {exc}")
+        if len(failures) > 1:
+            raise RuntimeError(
+                "all configured inference providers failed: " + "; ".join(failures)
+            )
+        raise RuntimeError(failures[0])
 
     async def stream(
         self,
@@ -95,14 +133,23 @@ class MultiEngine(InferenceEngine):
         max_tokens: int = 1024,
         **kwargs: Any,
     ) -> AsyncIterator[str]:
-        async for token in self._engine_for(model).stream(
-            messages,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        ):
-            yield token
+        candidates = [model, *self._fallback_models(model)]
+        for index, candidate in enumerate(candidates):
+            emitted = False
+            try:
+                async for token in self._engine_for(candidate).stream(
+                    messages,
+                    model=candidate,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    **kwargs,
+                ):
+                    emitted = True
+                    yield token
+                return
+            except Exception:
+                if emitted or index == len(candidates) - 1:
+                    raise
 
     async def stream_full(
         self,
