@@ -16,8 +16,10 @@ from openjarvis.cli._tool_names import resolve_tool_names
 from openjarvis.cli._voice_chat import VOICE_EXIT, VoiceSession, read_voice_input, speak
 from openjarvis.core.config import load_config
 from openjarvis.core.events import EventBus
+from openjarvis.core.paths import get_config_dir
 from openjarvis.core.types import Message, Role
 from openjarvis.memory import publish_completed_exchange
+from openjarvis.personal import ProfileStore
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +116,8 @@ def chat(
 
     config = load_config()
     bus = EventBus(record_history=False)
+    profile_store = ProfileStore(get_config_dir() / "profiles.db")
+    active_profile = None
 
     import dataclasses as _dc
 
@@ -362,6 +366,16 @@ def chat(
     if system_prompt:
         history.append(Message(role=Role.SYSTEM, content=system_prompt))
 
+    profiles = profile_store.list()
+    if profiles:
+        active_profile = profiles[0]
+        for saved in profile_store.messages(active_profile.id):
+            try:
+                role = Role(saved.role)
+            except ValueError:
+                continue
+            history.append(Message(role=role, content=saved.content))
+
     # REPL loop
     while True:
         for note in _notifications.diff(get_status()):
@@ -384,6 +398,21 @@ def chat(
             user_input = user_input.strip()
             if not user_input:
                 continue
+
+        addressed, routed_input = profile_store.route(user_input)
+        if addressed is not None:
+            if active_profile is None or addressed.id != active_profile.id:
+                active_profile = addressed
+                history = []
+                if system_prompt:
+                    history.append(Message(role=Role.SYSTEM, content=system_prompt))
+                for saved in profile_store.messages(active_profile.id):
+                    try:
+                        role = Role(saved.role)
+                    except ValueError:
+                        continue
+                    history.append(Message(role=role, content=saved.content))
+            user_input = routed_input or user_input
 
         response_language = (
             getattr(voice_session, "last_detected_language", None)
@@ -508,6 +537,9 @@ def chat(
                 )
 
             history.append(Message(role=Role.ASSISTANT, content=content))
+            if active_profile is not None:
+                profile_store.add_message(active_profile.id, "user", user_input)
+                profile_store.add_message(active_profile.id, "assistant", content)
             console.print()
             console.print(Markdown(content))
             console.print()
