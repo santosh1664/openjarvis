@@ -123,6 +123,7 @@ if not _DATA_BOUNDARY_BOOTSTRAP:
     from openjarvis.cli.operators_cmd import operators
     from openjarvis.cli.optimize_cmd import optimize_group
     from openjarvis.cli.pearl_cmd import pearl
+    from openjarvis.cli.personal_cmd import personal
     from openjarvis.cli.quickstart_cmd import quickstart
     from openjarvis.cli.registry_cmd import registry
     from openjarvis.cli.scheduler_cmd import scheduler
@@ -143,6 +144,7 @@ if not _DATA_BOUNDARY_BOOTSTRAP:
     cli.add_command(memory, "memory")
     cli.add_command(mine, "mine")
     cli.add_command(pearl, "pearl")
+    cli.add_command(personal, "personal")
     cli.add_command(telemetry, "telemetry")
     cli.add_command(bench, "bench")
     cli.add_command(channel, "channel")
