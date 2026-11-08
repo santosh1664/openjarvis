@@ -28,6 +28,7 @@ _ANTHROPIC_PREFIXES = ("claude-",)
 _GOOGLE_PREFIXES = ("gemini-",)
 _MINIMAX_PREFIXES = ("MiniMax-",)
 _NVIDIA_PREFIX = "nvidia/"
+_HUGGINGFACE_PREFIX = "huggingface/"
 # Atlas Cloud IDs are already "vendor/model", so they must be recognised by
 # their routing prefix before the generic '"/" means OpenRouter' fallback
 # below — otherwise "atlascloud/openai/gpt-4.1-mini" is sent to OpenRouter.
@@ -63,6 +64,8 @@ def _load_keys() -> dict[str, str]:
         "ATLASCLOUD_API_KEY",
         "NVIDIA_API_KEY",
         "NIM_API_KEY",
+        "HF_TOKEN",
+        "HUGGINGFACEHUB_API_TOKEN",
     ):
         val = os.environ.get(name)
         if val:
@@ -86,6 +89,8 @@ def get_provider(model: str) -> str | None:
         return "minimax"
     if model.startswith(_NVIDIA_PREFIX):
         return "nvidia"
+    if model.startswith(_HUGGINGFACE_PREFIX):
+        return "huggingface"
     if model.startswith(_ATLASCLOUD_PREFIX):
         return "atlascloud"
     if any(model.startswith(org) for org in _LOCAL_HF_ORGS):
@@ -452,6 +457,23 @@ async def stream_cloud(
             temperature,
             max_tokens,
             base_url="https://integrate.api.nvidia.com/v1",
+            api_key_name=api_key_name,
+        ):
+            yield token
+
+    elif provider == "huggingface":
+        keys = _load_keys()
+        api_key_name = (
+            "HF_TOKEN" if keys.get("HF_TOKEN") else "HUGGINGFACEHUB_API_TOKEN"
+        )
+        if not keys.get(api_key_name):
+            raise ValueError("HF_TOKEN not set — add it in the Cloud Models tab")
+        async for token in _stream_openai(
+            model.removeprefix(_HUGGINGFACE_PREFIX),
+            messages,
+            temperature,
+            max_tokens,
+            base_url="https://router.huggingface.co/v1",
             api_key_name=api_key_name,
         ):
             yield token

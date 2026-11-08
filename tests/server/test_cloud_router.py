@@ -24,6 +24,7 @@ def test_gpt_oss_is_local(model):
         ("claude-sonnet-4-20250514", "anthropic"),
         ("gemini-2.5-pro", "google"),
         ("nvidia/llama-3.3-nemotron-super-49b-v1", "nvidia"),
+        ("huggingface/meta-llama/Llama-3.1-8B-Instruct", "huggingface"),
         ("openai/gpt-oss-20b", "openrouter"),
         ("openrouter/openai/gpt-oss-120b", "openrouter"),
         ("atlascloud/openai/gpt-oss-120b", "atlascloud"),
@@ -71,6 +72,34 @@ def test_stream_cloud_uses_nvidia_nim_endpoint(monkeypatch):
     assert captured["model"] == "llama-3.3-nemotron-super-49b-v1"
     assert captured["base_url"] == "https://integrate.api.nvidia.com/v1"
     assert captured["api_key_name"] == "NVIDIA_API_KEY"
+
+
+def test_stream_cloud_uses_huggingface_router(monkeypatch):
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    captured: dict[str, str] = {}
+
+    async def fake_stream_openai(model, messages, temperature, max_tokens, **kwargs):
+        captured.update(kwargs)
+        captured["model"] = model
+        yield "ok"
+
+    monkeypatch.setattr(cloud_router, "_stream_openai", fake_stream_openai)
+
+    async def collect_tokens():
+        return [
+            token
+            async for token in cloud_router.stream_cloud(
+                "huggingface/meta-llama/Llama-3.1-8B-Instruct",
+                [Message(role="user", content="hi")],
+            )
+        ]
+
+    import asyncio
+
+    assert asyncio.run(collect_tokens()) == ["ok"]
+    assert captured["model"] == "meta-llama/Llama-3.1-8B-Instruct"
+    assert captured["base_url"] == "https://router.huggingface.co/v1"
+    assert captured["api_key_name"] == "HF_TOKEN"
 
 
 @pytest.mark.parametrize(

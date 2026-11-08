@@ -81,6 +81,15 @@ const CLOUD_PROVIDERS: CloudProvider[] = [
     ],
   },
   {
+    name: 'Hugging Face',
+    envKey: 'HF_TOKEN',
+    models: [
+      { id: 'huggingface/meta-llama/Llama-3.1-8B-Instruct', desc: 'Llama 3.1 8B via Hugging Face' },
+      { id: 'huggingface/Qwen/Qwen2.5-72B-Instruct', desc: 'Qwen 2.5 72B via Hugging Face' },
+      { id: 'huggingface/deepseek-ai/DeepSeek-R1', desc: 'DeepSeek R1 via Hugging Face' },
+    ],
+  },
+  {
     name: 'Atlas Cloud',
     envKey: 'ATLASCLOUD_API_KEY',
     models: [
