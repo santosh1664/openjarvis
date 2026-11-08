@@ -7,7 +7,7 @@ from rich.console import Console
 
 from openjarvis.core.paths import get_config_dir
 from openjarvis.memory.store import LocalFactStore
-from openjarvis.personal import PersonalAutomation, PersonalMemory
+from openjarvis.personal import PersonalAutomation, PersonalMemory, ProfileStore
 
 
 @click.group("personal")
@@ -55,6 +55,40 @@ def automate(
     finally:
         automation.close()
     Console().print(f"[green]Created automation {task['id']}.[/green]")
+
+
+@personal.group("profile")
+def profile() -> None:
+    """Manage the three isolated JARVIS profiles."""
+
+
+@profile.command("create")
+@click.argument("name")
+def profile_create(name: str) -> None:
+    """Create a named profile."""
+    store = ProfileStore(get_config_dir() / "profiles.db")
+    try:
+        created = store.create(name)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    finally:
+        store.close()
+    Console().print(f"[green]Created profile {created.name}.[/green]")
+
+
+@profile.command("list")
+def profile_list() -> None:
+    """List configured profiles."""
+    store = ProfileStore(get_config_dir() / "profiles.db")
+    try:
+        profiles = store.list()
+    finally:
+        store.close()
+    if not profiles:
+        Console().print("[dim]No profiles configured.[/dim]")
+        return
+    for item in profiles:
+        Console().print(f"- {item.name}")
 
 
 __all__ = ["personal"]
