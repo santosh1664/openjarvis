@@ -2491,6 +2491,7 @@ def create_agent_manager_router(
         api_key_id = body.get("api_key_id", "")
         api_secret_key = body.get("api_secret_key", "")
         webhook_url = body.get("webhook_url", "")
+        webhook_secret = body.get("webhook_secret", "")
         if not webhook_url:
             raise HTTPException(
                 status_code=400,
@@ -2501,6 +2502,9 @@ def create_agent_manager_router(
 
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:
+                webhook = {"url": webhook_url}
+                if webhook_secret:
+                    webhook["secret"] = webhook_secret
                 resp = await client.post(
                     "https://api.sendblue.co/api/account/webhooks",
                     headers={
@@ -2508,10 +2512,7 @@ def create_agent_manager_router(
                         "sb-api-secret-key": api_secret_key,
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "webhooks": [webhook_url],
-                        "type": "receive",
-                    },
+                    json={"webhooks": [webhook], "type": "receive"},
                 )
             return {
                 "registered": resp.status_code < 300,

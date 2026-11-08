@@ -375,7 +375,11 @@ def create_webhook_router(
         if sb is None or not getattr(sb, "webhook_secret", ""):
             logger.error("SendBlue webhook rejected: webhook_secret not configured.")
             return Response("Webhook secret not configured", status_code=403)
-        header_secret = request.headers.get("x-sendblue-secret", "")
+        # Sendblue uses ``sb-signing-secret`` for configured webhook secrets.
+        # Keep accepting the older custom header for existing integrations.
+        header_secret = request.headers.get("sb-signing-secret", "") or request.headers.get(
+            "x-sendblue-secret", ""
+        )
         if not hmac.compare_digest(header_secret, sb.webhook_secret):
             return Response("Invalid secret", status_code=403)
 
