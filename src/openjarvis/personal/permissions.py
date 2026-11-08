@@ -56,6 +56,9 @@ class PermissionAuditLog:
             for row in self._conn.execute(query, args)
         ]
 
+    def close(self) -> None:
+        self._conn.close()
+
 
 class PermissionPolicy:
     def __init__(
