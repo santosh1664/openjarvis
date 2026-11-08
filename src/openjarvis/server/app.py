@@ -53,9 +53,9 @@ def _restore_sendblue_bindings(app: FastAPI) -> None:
                 if b.get("channel_type") != "sendblue":
                     continue
                 config = b.get("config", {})
-                api_key_id = config.get("api_key_id", "")
-                api_secret_key = config.get("api_secret_key", "")
-                from_number = config.get("from_number", "")
+                api_key_id = config.get("api_key_id") or config.get("api_key", "")
+                api_secret_key = config.get("api_secret_key") or config.get("api_secret", "")
+                from_number = config.get("from_number") or config.get("phone_number", "")
                 if not api_key_id or not api_secret_key:
                     continue
 

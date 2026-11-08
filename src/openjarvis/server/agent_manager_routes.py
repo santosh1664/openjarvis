@@ -1911,9 +1911,11 @@ def create_agent_manager_router(
         # Initialize SendBlue channel if binding sendblue
         if req.channel_type == "sendblue":
             config = req.config or {}
-            api_key_id = config.get("api_key_id", "")
-            api_secret_key = config.get("api_secret_key", "")
-            from_number = config.get("from_number", "")
+            # Accept the legacy wizard field names too, so connections saved
+            # before the schema fix can still be restored and reconnected.
+            api_key_id = config.get("api_key_id") or config.get("api_key", "")
+            api_secret_key = config.get("api_secret_key") or config.get("api_secret", "")
+            from_number = config.get("from_number") or config.get("phone_number", "")
             if api_key_id and api_secret_key:
                 try:
                     from openjarvis.channels.sendblue import (

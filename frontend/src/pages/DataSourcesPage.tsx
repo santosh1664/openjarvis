@@ -1579,9 +1579,9 @@ function SendBlueSection({
     setError('');
     try {
       await bindAgentChannel(agentId, 'sendblue', {
-        api_key: apiKey.trim(),
-        api_secret: apiSecret.trim(),
-        phone_number: phone.trim(),
+        api_key_id: apiKey.trim(),
+        api_secret_key: apiSecret.trim(),
+        from_number: phone.trim(),
       });
       // If webhook was registered in the wizard, that's already done.
       // If not, try a best-effort registration with the provided URL.
